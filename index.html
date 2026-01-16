@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aubervilliers - Analyse Finale</title>
+  <title>Aubervilliers - Dashboard Final</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -26,7 +26,7 @@
       margin: 0; font-family: 'Segoe UI', sans-serif;
       background: var(--bg-main); color: var(--text-light);
       height: 100vh; display: flex; flex-direction: column;
-      overflow: hidden; /* Empêche le scroll global */
+      overflow: hidden; /* Empêche le scroll de la page entière */
     }
 
     /* HEADER */
@@ -35,75 +35,77 @@
       padding: 0 20px; height: 50px; background: var(--bg-panel);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
-      z-index: 1000;
+      z-index: 2000;
     }
     header h1 { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
 
     /* LAYOUT PRINCIPAL */
     .layout { 
       display: flex; 
-      height: calc(100vh - 50px); /* Prend tout le reste de la hauteur */
+      height: calc(100vh - 50px); 
       width: 100%;
-      overflow: hidden;
     }
 
-    /* SIDEBAR (GAUCHE) */
+    /* SIDEBAR (GAUCHE) - ÉLARGIE POUR RÉDUIRE LA CARTE */
     .sidebar {
-      width: 500px; /* Plus large pour éviter le chevauchement */
+      width: 520px; /* Plus large = Carte plus petite */
       background: var(--bg-panel);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       flex-shrink: 0;
-      overflow-y: auto; /* Scroll uniquement ici */
-      z-index: 500;
+      z-index: 1000; /* Au-dessus de la carte */
+      box-shadow: 5px 0 15px rgba(0,0,0,0.3);
     }
 
-    /* ZONE GRAPHES (CORRIGÉE) */
+    /* ZONE GRAPHES (HAUT SIDEBAR) - FIXÉE */
     .dashboard-panel { 
-      padding: 20px; 
+      padding: 15px; 
       background: #0f1623; 
       border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      flex-shrink: 0; /* Ne rétrécit pas */
     }
     
     .charts-wrapper { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 20px; 
-    }
-    
-    .chart-row { 
       display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 15px; 
-      align-items: start;
+      grid-template-columns: 1fr 1fr; /* 2 colonnes */
+      gap: 10px; 
     }
     
+    /* Graphe Sentiments (Prend toute la largeur) */
+    .chart-full { grid-column: span 2; }
+
     .chart-box { 
       background: rgba(255,255,255,0.02); 
       border-radius: 8px; 
-      padding: 10px; 
+      padding: 8px; 
       border: 1px solid var(--border);
-      overflow: hidden; /* Coupe ce qui dépasse */
+      height: 160px; /* HAUTEUR FIXE POUR EMPÊCHER LE DÉBORDEMENT */
+      display: flex; flex-direction: column;
     }
     
     .chart-title { 
-      font-size: 0.75rem; 
-      text-align: center; 
-      margin-bottom: 8px; 
-      color: #ccc; 
-      text-transform: uppercase;
-      font-weight: bold;
+      font-size: 0.7rem; text-align: center; margin-bottom: 5px; 
+      color: #ccc; text-transform: uppercase; font-weight: bold; flex-shrink: 0;
     }
     
-    /* Conteneur Canvas FIXE pour éviter les bugs */
-    .canvas-container-big { position: relative; height: 180px; width: 100%; }
-    .canvas-container-small { position: relative; height: 140px; width: 100%; }
+    .canvas-container { 
+      flex: 1; position: relative; width: 100%; overflow: hidden; 
+    }
 
-    /* LISTE PHOTOS */
-    .list-container { padding: 20px; }
-    .section-title { font-size: 0.9rem; color: var(--accent); text-transform: uppercase; margin: 0 0 15px 0; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+    /* LISTE PHOTOS (BAS SIDEBAR) - SCROLLABLE */
+    .list-container { 
+      padding: 15px; 
+      overflow-y: auto; /* Scroll uniquement ici */
+      flex: 1; 
+    }
+    
+    .section-title { 
+      font-size: 0.85rem; color: var(--accent); text-transform: uppercase; 
+      margin: 0 0 15px 0; font-weight: bold; 
+      position: sticky; top: 0; background: var(--bg-panel); padding: 5px 0;
+    }
 
+    /* DESIGN DES CARTES PHOTOS (CONSERVÉ) */
     .spot-card {
       background: var(--card-bg); border-radius: 8px; padding: 12px;
       margin-bottom: 15px; border: 1px solid transparent; 
@@ -111,43 +113,48 @@
     }
     .spot-card:hover, .spot-card.active { border-color: var(--accent); background: #23304a; }
 
-    .card-header { display: flex; gap: 15px; margin-bottom: 10px; }
-    .spot-img { width: 90px; height: 90px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); }
+    .card-header { display: flex; gap: 12px; margin-bottom: 8px; }
+    .spot-img { width: 85px; height: 85px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); }
     
-    .spot-title { font-size: 1.1rem; font-weight: 600; color: white; margin-bottom: 5px; }
-    .spot-desc { font-size: 0.85rem; color: #ccc; line-height: 1.4; margin-bottom: 10px; font-style: italic; }
+    .spot-info { flex: 1; }
+    .spot-title { font-size: 1rem; font-weight: 600; color: white; margin-bottom: 4px; }
+    .spot-id { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; font-weight: bold; margin-bottom: 4px; display: block; }
     
-    .meta-grid { 
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
-      font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.2); 
-      padding: 8px; border-radius: 4px;
-    }
-    .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; border: 1px solid #fff; }
+    .tags-row { display: flex; gap: 5px; flex-wrap: wrap; }
+    .tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: #ccc; }
+    .tag.sentiment { background: rgba(0, 210, 255, 0.15); color: var(--accent); }
+
+    .card-body { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; }
+    .spot-desc { font-size: 0.8rem; color: #ccc; line-height: 1.4; margin-bottom: 8px; font-style: italic; }
+    
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 6px; border-radius: 4px; }
+    .meta-item b { color: white; margin-right: 4px; }
+    .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; border: 1px solid #fff; vertical-align: middle; }
 
     /* MAP */
     #map { 
-      flex: 1; /* Prend tout l'espace restant */
+      flex: 1; /* Prend l'espace restant */
       height: 100%; 
       background: #0b1220; 
-      z-index: 1; /* Reste derrière la sidebar */
     }
 
     /* POPUP */
     .leaflet-popup-content-wrapper { background: var(--bg-panel); color: white; border: 1px solid var(--accent); border-radius: 8px; }
     .leaflet-popup-tip { background: var(--bg-panel); border-top: 1px solid var(--accent); }
-    .popup-wrapper { width: 260px; }
+    .popup-wrapper { width: 280px; }
     .popup-img { width: 100%; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.2); }
+    .popup-meta { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; font-size: 0.75rem; margin-top: 5px; }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1000px) {
       .layout { flex-direction: column-reverse; }
-      .sidebar { width: 100%; height: 50vh; }
+      .sidebar { width: 100%; height: 60vh; }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Aubervilliers — Analyse Finale</h1>
+    <h1>Aubervilliers — Analyse Complète</h1>
     <span style="font-size:0.8rem; color:var(--accent);">Dashboard Interactif</span>
   </header>
 
@@ -156,36 +163,32 @@
     <aside class="sidebar">
       
       <div class="dashboard-panel">
-        <div class="section-title">Analyse des Données</div>
-        
         <div class="charts-wrapper">
-          <div class="chart-box">
+          <div class="chart-box chart-full">
             <div class="chart-title">Répartition des Sentiments</div>
-            <div class="canvas-container-big">
+            <div class="canvas-container">
               <canvas id="chart1"></canvas>
             </div>
           </div>
           
-          <div class="chart-row">
-            <div class="chart-box">
-              <div class="chart-title">Typologies</div>
-              <div class="canvas-container-small">
-                <canvas id="chart2"></canvas>
-              </div>
+          <div class="chart-box">
+            <div class="chart-title">Typologies</div>
+            <div class="canvas-container">
+              <canvas id="chart2"></canvas>
             </div>
-            
-            <div class="chart-box">
-              <div class="chart-title">Densité (Rythme)</div>
-              <div class="canvas-container-small">
-                <canvas id="chart3"></canvas>
-              </div>
+          </div>
+          
+          <div class="chart-box">
+            <div class="chart-title">Densité (Rythme)</div>
+            <div class="canvas-container">
+              <canvas id="chart3"></canvas>
             </div>
           </div>
         </div>
       </div>
 
       <div class="list-container" id="cards-list">
-        <div class="section-title">Détail des 17 Étapes</div>
+        <div class="section-title">Détails des Étapes (17)</div>
         </div>
     </aside>
 
@@ -225,7 +228,7 @@
   // --- GÉNÉRATION ---
   data.forEach(item => {
     
-    // Carte Liste
+    // Carte Liste (DÉTAILLÉE)
     const el = document.createElement('div');
     el.className = 'spot-card';
     el.id = `card-${item.id}`;
@@ -234,29 +237,41 @@
     el.innerHTML = `
       <div class="card-header">
         <img src="${item.file}" class="spot-img" onerror="this.src='https://placehold.co/80'">
-        <div style="flex:1">
+        <div class="spot-info">
+          <span class="spot-id">ÉTAPE #${item.id}</span>
           <div class="spot-title">${item.title}</div>
-          <div class="meta-grid">
-            <span><b>#${item.id}</b> | ${item.sentiment}</span>
-            <span><span class="color-dot" style="background:${item.color}"></span></span>
+          <div class="tags-row">
+            <span class="tag sentiment">${item.sentiment}</span>
+            <span class="tag">${item.type}</span>
           </div>
         </div>
       </div>
-      <div class="spot-desc">${item.desc}</div>
-      <div class="meta-grid">
-        <span><b>Dim:</b> ${item.dims}</span>
-        <span><b>Type:</b> ${item.type}</span>
+      <div class="card-body">
+        <div class="spot-desc">${item.desc}</div>
+        <div class="meta-grid">
+          <div class="meta-item"><b>Dim:</b> ${item.dims}</div>
+          <div class="meta-item"><b>Densité:</b> ${item.density}/10</div>
+          <div class="meta-item" style="grid-column:span 2;">
+            <b>Couleur:</b> <span class="color-dot" style="background:${item.color}"></span> ${item.color}
+          </div>
+        </div>
       </div>
     `;
     list.appendChild(el);
 
-    // Marker
+    // Marker + Popup Détaillée
     const m = L.circleMarker(item.coords, { color: '#00d2ff', fillColor: item.color, fillOpacity: 0.9, radius: 8 }).addTo(map);
     m.bindPopup(`
       <div class="popup-wrapper">
         <div class="popup-title">${item.id}. ${item.title}</div>
         <img src="${item.file}" class="popup-img">
         <div class="popup-desc">${item.desc}</div>
+        <div class="popup-meta">
+          <strong>Type:</strong> ${item.type} <br>
+          <strong>Sentiment:</strong> ${item.sentiment} <br>
+          <strong>Dimensions:</strong> ${item.dims} <br>
+          <strong>Couleur:</strong> <span style="color:${item.color}">● ${item.color}</span>
+        </div>
       </div>
     `);
     markers[item.id] = m;
