@@ -26,7 +26,7 @@
       margin: 0; font-family: 'Segoe UI', sans-serif;
       background: var(--bg-main); color: var(--text-light);
       height: 100vh; display: flex; flex-direction: column;
-      overflow: hidden; /* Empêche le scroll de la page entière */
+      overflow: hidden;
     }
 
     /* HEADER */
@@ -46,40 +46,37 @@
       width: 100%;
     }
 
-    /* SIDEBAR (GAUCHE) - ÉLARGIE POUR RÉDUIRE LA CARTE */
+    /* SIDEBAR (GAUCHE) */
     .sidebar {
-      width: 520px; /* Plus large = Carte plus petite */
+      width: 520px; 
       background: var(--bg-panel);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       flex-shrink: 0;
-      z-index: 1000; /* Au-dessus de la carte */
+      z-index: 1000;
       box-shadow: 5px 0 15px rgba(0,0,0,0.3);
     }
 
-    /* ZONE GRAPHES (HAUT SIDEBAR) - FIXÉE */
+    /* ZONE GRAPHES */
     .dashboard-panel { 
       padding: 15px; 
       background: #0f1623; 
       border-bottom: 1px solid var(--border);
-      flex-shrink: 0; /* Ne rétrécit pas */
+      flex-shrink: 0;
     }
     
     .charts-wrapper { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; /* 2 colonnes */
-      gap: 10px; 
+      display: flex; 
+      flex-direction: column; /* Empile les graphes verticalement */
+      gap: 15px; 
     }
     
-    /* Graphe Sentiments (Prend toute la largeur) */
-    .chart-full { grid-column: span 2; }
-
     .chart-box { 
       background: rgba(255,255,255,0.02); 
       border-radius: 8px; 
       padding: 8px; 
       border: 1px solid var(--border);
-      height: 160px; /* HAUTEUR FIXE POUR EMPÊCHER LE DÉBORDEMENT */
+      height: 160px; 
       display: flex; flex-direction: column;
     }
     
@@ -92,10 +89,10 @@
       flex: 1; position: relative; width: 100%; overflow: hidden; 
     }
 
-    /* LISTE PHOTOS (BAS SIDEBAR) - SCROLLABLE */
+    /* LISTE PHOTOS */
     .list-container { 
       padding: 15px; 
-      overflow-y: auto; /* Scroll uniquement ici */
+      overflow-y: auto; 
       flex: 1; 
     }
     
@@ -105,7 +102,7 @@
       position: sticky; top: 0; background: var(--bg-panel); padding: 5px 0;
     }
 
-    /* DESIGN DES CARTES PHOTOS (CONSERVÉ) */
+    /* CARTE PHOTO */
     .spot-card {
       background: var(--card-bg); border-radius: 8px; padding: 12px;
       margin-bottom: 15px; border: 1px solid transparent; 
@@ -132,11 +129,7 @@
     .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; border: 1px solid #fff; vertical-align: middle; }
 
     /* MAP */
-    #map { 
-      flex: 1; /* Prend l'espace restant */
-      height: 100%; 
-      background: #0b1220; 
-    }
+    #map { flex: 1; height: 100%; background: #0b1220; }
 
     /* POPUP */
     .leaflet-popup-content-wrapper { background: var(--bg-panel); color: white; border: 1px solid var(--accent); border-radius: 8px; }
@@ -164,7 +157,7 @@
       
       <div class="dashboard-panel">
         <div class="charts-wrapper">
-          <div class="chart-box chart-full">
+          <div class="chart-box">
             <div class="chart-title">Répartition des Sentiments</div>
             <div class="canvas-container">
               <canvas id="chart1"></canvas>
@@ -172,16 +165,9 @@
           </div>
           
           <div class="chart-box">
-            <div class="chart-title">Typologies</div>
+            <div class="chart-title">Typologies d'espaces</div>
             <div class="canvas-container">
               <canvas id="chart2"></canvas>
-            </div>
-          </div>
-          
-          <div class="chart-box">
-            <div class="chart-title">Densité (Rythme)</div>
-            <div class="canvas-container">
-              <canvas id="chart3"></canvas>
             </div>
           </div>
         </div>
@@ -228,7 +214,7 @@
   // --- GÉNÉRATION ---
   data.forEach(item => {
     
-    // Carte Liste (DÉTAILLÉE)
+    // Carte Liste
     const el = document.createElement('div');
     el.className = 'spot-card';
     el.id = `card-${item.id}`;
@@ -250,7 +236,6 @@
         <div class="spot-desc">${item.desc}</div>
         <div class="meta-grid">
           <div class="meta-item"><b>Dim:</b> ${item.dims}</div>
-          <div class="meta-item"><b>Densité:</b> ${item.density}/10</div>
           <div class="meta-item" style="grid-column:span 2;">
             <b>Couleur:</b> <span class="color-dot" style="background:${item.color}"></span> ${item.color}
           </div>
@@ -259,7 +244,7 @@
     `;
     list.appendChild(el);
 
-    // Marker + Popup Détaillée
+    // Marker
     const m = L.circleMarker(item.coords, { color: '#00d2ff', fillColor: item.color, fillOpacity: 0.9, radius: 8 }).addTo(map);
     m.bindPopup(`
       <div class="popup-wrapper">
@@ -290,12 +275,10 @@
     document.getElementById(`card-${id}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  // --- CHART.JS CONFIGURATION (CORRIGÉE) ---
+  // --- CHART.JS CONFIGURATION (2 Graphes uniquement) ---
   
   const sentimentCounts = {};
   const typeCounts = {};
-  const densityData = data.map(d => d.density);
-  const labels = data.map(d => d.id);
 
   data.forEach(d => {
     sentimentCounts[d.sentiment] = (sentimentCounts[d.sentiment] || 0) + 1;
@@ -336,28 +319,7 @@
       responsive: true, 
       maintainAspectRatio: false, 
       plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color: '#8b9bbd', font:{size:8} } }, y: { display:false } }
-    }
-  });
-
-  // Chart 3: Densité (Line)
-  new Chart(document.getElementById('chart3'), {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Densité',
-        data: densityData,
-        borderColor: '#ff00d4',
-        backgroundColor: 'rgba(255, 0, 212, 0.1)',
-        tension: 0.4, fill: true, pointRadius: 0
-      }]
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: { display: false }, y: { display: false, min: 0, max: 10 } }
+      scales: { x: { ticks: { color: '#8b9bbd', font:{size:9} } }, y: { display:false } }
     }
   });
 
