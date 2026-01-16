@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Parcours Photos — Aubervilliers (Dark Mode)</title>
+  <title>Parcours Photos — Aubervilliers (Dark Data)</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <style>
-    /* --- NOUVELLE PALETTE DE COULEURS (STYLE NÉON/DARK) --- */
+    /* --- PALETTE DARK MODE NÉON --- */
     :root {
-      --bg-main: #0b1220;    /* Fond général très sombre */
-      --bg-panel: #111a2e;   /* Fond du panneau latéral */
-      --card-bg: #1a2639;    /* Couleur des cartes (bleu foncé comme l'exemple) */
-      --text-light: #e8eefc; /* Texte blanc/clair */
-      --text-muted: #8b9bbd; /* Texte secondaire gris/bleuté */
-      --accent: #00d2ff;     /* Bleu cyan fluo pour les accents */
+      --bg-main: #0b1220;
+      --bg-panel: #111a2e;
+      --card-bg: #1a2639;
+      --text-light: #e8eefc;
+      --text-muted: #8b9bbd;
+      --accent: #00d2ff; /* Cyan néon */
       --border-color: rgba(255,255,255,0.1);
     }
 
@@ -28,125 +28,88 @@
       background: var(--bg-main);
       color: var(--text-light);
       height: 100vh;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
     }
 
-    /* Header simplifié */
+    /* Header */
     header {
-      padding: 15px 20px;
-      background: var(--bg-panel);
+      padding: 15px 20px; background: var(--bg-panel);
       border-bottom: 1px solid var(--border-color);
       display: flex; justify-content: space-between; align-items: center;
     }
-    header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; letter-spacing: 0.5px; }
+    header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; }
     header .meta { font-size: 0.9rem; color: var(--accent); }
 
-    /* Layout principal */
-    .layout {
-      display: flex;
-      flex: 1;
-      overflow: hidden; /* Important pour le scroll */
-    }
+    /* Layout */
+    .layout { display: flex; flex: 1; overflow: hidden; }
 
-    /* Panneau latéral (Sidebar) */
+    /* Sidebar (Panneau latéral) */
     .sidebar {
-      width: 400px;
+      width: 420px; /* Un peu plus large pour les métadonnées */
       background: var(--bg-panel);
       border-right: 1px solid var(--border-color);
-      overflow-y: auto; /* Scroll uniquement ici */
-      padding: 20px;
-      flex-shrink: 0;
+      overflow-y: auto; padding: 20px; flex-shrink: 0;
     }
 
-    /* --- NOUVEAU DESIGN DES CARTES (style de ton image) --- */
+    /* --- NOUVEAU DESIGN DES CARTES (PLUS RICHES) --- */
     .spot-card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 15px;
-      display: flex; /* Disposition horizontale : image à gauche, texte à droite */
-      gap: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      background: var(--card-bg); border-radius: 12px; padding: 15px;
+      margin-bottom: 20px; display: flex; gap: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: transform 0.2s, border-color 0.2s;
-      cursor: pointer;
+      transition: all 0.3s ease; cursor: pointer; position: relative;
     }
     .spot-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
+      transform: translateY(-3px); border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+    }
+    /* Indicateur visuel de sélection */
+    .spot-card.active-card {
+        border: 2px solid var(--accent);
+        background: #1f2e45;
     }
 
-    /* Petite image carrée à gauche */
     .spot-thumb {
-      width: 85px;
-      height: 85px;
-      border-radius: 10px;
-      object-fit: cover;
-      flex-shrink: 0;
-      border: 2px solid rgba(0, 210, 255, 0.2);
+      width: 90px; height: 90px; border-radius: 10px; object-fit: cover;
+      flex-shrink: 0; border: 2px solid rgba(0, 210, 255, 0.3);
     }
 
-    /* Contenu texte à droite */
-    .spot-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
+    .spot-content { flex: 1; display: flex; flex-direction: column; }
 
-    /* Badges supérieurs (Time / Coord) - Style Cyan */
-    .spot-badges {
-      display: flex; gap: 8px; margin-bottom: 6px;
-    }
+    .spot-badges { display: flex; gap: 8px; margin-bottom: 8px; }
     .badge {
-      background: rgba(0, 210, 255, 0.15); /* Fond cyan transparent */
-      color: var(--accent);
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      background: rgba(0, 210, 255, 0.15); color: var(--accent);
+      font-size: 0.7rem; font-weight: 700; padding: 4px 8px;
+      border-radius: 4px; text-transform: uppercase;
     }
 
     .spot-content h3 {
-      margin: 0 0 6px 0;
-      font-size: 1rem;
-      color: var(--text-light);
-      line-height: 1.3;
+      margin: 0 0 10px 0; font-size: 1.1rem; color: var(--text-light);
     }
 
-    /* Données secondaires (Sentiment / Couleur) */
-    .spot-data-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+    /* --- NOUVELLE SECTION METADATA --- */
+    .meta-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        font-size: 0.8rem; color: var(--text-muted);
+        background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;
     }
-    .color-indicator {
-      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
-      box-shadow: 0 0 5px currentColor;
+    .meta-item { display: flex; align-items: center; gap: 6px; }
+    .meta-icon { opacity: 0.7; }
+    .color-sample {
+      width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+      border: 1px solid rgba(255,255,255,0.3);
     }
 
     /* Carte (Map) */
-    #map {
-      flex: 1; /* Prend tout le reste de l'espace */
-      height: 100%;
-      background: #0b1220;
-    }
+    #map { flex: 1; height: 100%; background: #0b1220; }
 
-    /* Style des Popups sur la carte */
-    .leaflet-popup-content-wrapper {
-      background: var(--bg-panel); color: var(--text-light); border-radius: 8px;
-    }
-    .leaflet-popup-tip { background: var(--bg-panel); }
-    .popup-img { width: 100%; border-radius: 6px; margin-bottom: 8px; }
+    /* Popups style sombre */
+    .leaflet-popup-content-wrapper { background: var(--bg-panel); color: var(--text-light); border: 1px solid var(--accent); }
+    .leaflet-popup-tip { background: var(--bg-panel); border-top: 1px solid var(--accent); }
+    .popup-img { width: 100%; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--border-color); }
 
-    /* Responsive pour mobile */
     @media (max-width: 768px) {
-      .layout { flex-direction: column-reverse; } /* Carte en haut, liste en bas sur mobile */
+      .layout { flex-direction: column-reverse; }
       .sidebar { width: 100%; height: 50vh; }
       #map { height: 50vh; }
     }
@@ -156,59 +119,55 @@
 
   <header>
     <h1>Parcours Aubervilliers</h1>
-    <div class="meta">Visualisation Dark Mode</div>
+    <div class="meta">Données & Visualisation Néon</div>
   </header>
 
   <div class="layout">
     <aside class="sidebar" id="cards-container">
       </aside>
-
     <main id="map"></main>
   </div>
 
 <script>
-  // --- 1. LES DONNÉES (Tes 17 photos) ---
-  // Assure-toi que les noms de fichiers sont exacts dans ton dossier GitHub
+  // --- 1. DONNÉES COMPLÈTES (Ajout des dimensions 'dims') ---
   const data = [
-        { id: 1, file: "images/photo04.jpg", title: "Humathèque (Ext.)", coords: [48.9105, 2.3660], time: "10:15", sentiment: "Moderne", color: "#3498DB" },
-        { id: 2, file: "images/photo02.jpg", title: "MSH Paris Nord", coords: [48.9112, 2.3655], time: "10:20", sentiment: "Graphique", color: "#A93226" },
-        { id: 3, file: "images/photo03.jpg", title: "Allée Platanes", coords: [48.9115, 2.3670], time: "10:25", sentiment: "Urbain", color: "#F1C40F" },
-        { id: 4, file: "images/photo10.jpg", title: "Contre-jour Végétal", coords: [48.9120, 2.3680], time: "10:30", sentiment: "Espoir", color: "#F39C12" },
-        { id: 5, file: "images/photo17.jpg", title: "Rayons & Bâtiment", coords: [48.9121, 2.3681], time: "10:35", sentiment: "Éblouissant", color: "#FFFFFF" },
-        { id: 6, file: "images/photo09.jpg", title: "Canopée Jaune", coords: [48.9122, 2.3682], time: "10:40", sentiment: "Chaud", color: "#D35400" },
-        { id: 7, file: "images/photo12.jpg", title: "Fresque Murale", coords: [48.9124, 2.3683], time: "10:45", sentiment: "Artistique", color: "#8E44AD" },
-        { id: 8, file: "images/photo05.jpg", title: "Parc (Ombres)", coords: [48.9125, 2.3685], time: "10:50", sentiment: "Paisible", color: "#1E8449" },
-        { id: 9, file: "images/photo08.jpg", title: "Grand Arbre", coords: [48.9126, 2.3688], time: "10:55", sentiment: "Nature", color: "#145A32" },
-        { id: 10, file: "images/photo06.jpg", title: "Statue Taureau", coords: [48.9128, 2.3690], time: "11:00", sentiment: "Curieux", color: "#7D6608" },
-        { id: 11, file: "images/photo07.jpg", title: "Plaque 'Camille'", coords: [48.9128, 2.3691], time: "11:05", sentiment: "Détail", color: "#95A5A6" },
-        { id: 12, file: "images/photo11.jpg", title: "Campus Vert", coords: [48.9130, 2.3695], time: "11:10", sentiment: "Ouvert", color: "#2ECC71" },
-        { id: 13, file: "images/photo16.jpg", title: "Esplanade", coords: [48.9132, 2.3698], time: "11:15", sentiment: "Vaste", color: "#5DADE2" },
-        { id: 14, file: "images/photo01.jpg", title: "Vieux Aubervilliers", coords: [48.9135, 2.3700], time: "11:25", sentiment: "Historique", color: "#A93226" },
-        { id: 15, file: "images/photo14.jpg", title: "Hall Entrée", coords: [48.9140, 2.3665], time: "11:35", sentiment: "Accueil", color: "#BDC3C7" },
-        { id: 16, file: "images/photo13.jpg", title: "Atrium (Bas)", coords: [48.9142, 2.3665], time: "11:40", sentiment: "Aérien", color: "#AED6F1" },
-        { id: 17, file: "images/photo15.jpg", title: "Atrium (Haut)", coords: [48.9145, 2.3665], time: "11:45", sentiment: "Complexe", color: "#5D6D7E" }
+        { id: 1, file: "images/photo04.jpg", title: "Humathèque (Ext.)", coords: [48.9105, 2.3660], time: "10:15", dims: "3024x4032", sentiment: "Moderne", color: "#3498DB" },
+        { id: 2, file: "images/photo02.jpg", title: "MSH Paris Nord", coords: [48.9112, 2.3655], time: "10:20", dims: "3024x4032", sentiment: "Graphique", color: "#A93226" },
+        { id: 3, file: "images/photo03.jpg", title: "Allée Platanes", coords: [48.9115, 2.3670], time: "10:25", dims: "3024x4032", sentiment: "Urbain", color: "#F1C40F" },
+        { id: 4, file: "images/photo10.jpg", title: "Contre-jour Végétal", coords: [48.9120, 2.3680], time: "10:30", dims: "3024x4032", sentiment: "Espoir", color: "#F39C12" },
+        { id: 5, file: "images/photo17.jpg", title: "Rayons & Bâtiment", coords: [48.9121, 2.3681], time: "10:35", dims: "3024x4032", sentiment: "Éblouissant", color: "#FFFFFF" },
+        { id: 6, file: "images/photo09.jpg", title: "Canopée Jaune", coords: [48.9122, 2.3682], time: "10:40", dims: "3024x4032", sentiment: "Chaud", color: "#D35400" },
+        { id: 7, file: "images/photo12.jpg", title: "Fresque Murale", coords: [48.9124, 2.3683], time: "10:45", dims: "3024x4032", sentiment: "Artistique", color: "#8E44AD" },
+        { id: 8, file: "images/photo05.jpg", title: "Parc (Ombres)", coords: [48.9125, 2.3685], time: "10:50", dims: "3024x4032", sentiment: "Paisible", color: "#1E8449" },
+        { id: 9, file: "images/photo08.jpg", title: "Grand Arbre", coords: [48.9126, 2.3688], time: "10:55", dims: "3024x4032", sentiment: "Nature", color: "#145A32" },
+        { id: 10, file: "images/photo06.jpg", title: "Statue Taureau", coords: [48.9128, 2.3690], time: "11:00", dims: "3024x4032", sentiment: "Curieux", color: "#7D6608" },
+        { id: 11, file: "images/photo07.jpg", title: "Plaque 'Camille'", coords: [48.9128, 2.3691], time: "11:05", dims: "3024x4032", sentiment: "Détail", color: "#95A5A6" },
+        { id: 12, file: "images/photo11.jpg", title: "Campus Vert", coords: [48.9130, 2.3695], time: "11:10", dims: "3024x4032", sentiment: "Ouvert", color: "#2ECC71" },
+        { id: 13, file: "images/photo16.jpg", title: "Esplanade", coords: [48.9132, 2.3698], time: "11:15", dims: "3024x4032", sentiment: "Vaste", color: "#5DADE2" },
+        { id: 14, file: "images/photo01.jpg", title: "Vieux Aubervilliers", coords: [48.9135, 2.3700], time: "11:25", dims: "3024x4032", sentiment: "Historique", color: "#A93226" },
+        { id: 15, file: "images/photo14.jpg", title: "Hall Entrée", coords: [48.9140, 2.3665], time: "11:35", dims: "3024x4032", sentiment: "Accueil", color: "#BDC3C7" },
+        { id: 16, file: "images/photo13.jpg", title: "Atrium (Bas)", coords: [48.9142, 2.3665], time: "11:40", dims: "3024x4032", sentiment: "Aérien", color: "#AED6F1" },
+        { id: 17, file: "images/photo15.jpg", title: "Atrium (Haut)", coords: [48.9145, 2.3665], time: "11:45", dims: "3024x4032", sentiment: "Complexe", color: "#5D6D7E" }
   ];
 
-  // --- 2. INITIALISATION DE LA CARTE (STYLE SOMBRE) ---
+  // --- 2. INITIALISATION CARTE (FOND SOMBRE) ---
   const map = L.map('map').setView([48.9125, 2.3680], 16);
-
-  // C'EST ICI QUE LA MAGIE OPÈRE : On utilise un fond de carte "Dark Matter"
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      subdomains: 'abcd',
-      maxZoom: 20
+      attribution: '&copy; OSM & CARTO', subdomains: 'abcd', maxZoom: 20
   }).addTo(map);
 
+  // Objet pour stocker les références aux marqueurs Leaflet par leur ID
+  const markersById = {};
 
   // --- 3. GÉNÉRATION DU CONTENU ---
   const cardsContainer = document.getElementById('cards-container');
   const pathCoords = [];
 
   data.forEach(item => {
-      // A. Générer la CARTE HTML (Nouveau design horizontal)
-      // On utilise des classes CSS différentes pour coller au style de ton image
+      // A. Générer la CARTE HTML (Avec métadonnées étendues)
+      // Note le nouveau 'onclick' qui appelle openSpotOnMap(id)
       const html = `
-          <div class="spot-card" id="spot-${item.id}" onclick="focusOnMap(${item.coords[0]}, ${item.coords[1]}, ${item.id})">
+          <div class="spot-card" id="card-${item.id}" onclick="openSpotOnMap(${item.id})">
               <img src="${item.file}" alt="${item.title}" class="spot-thumb" onerror="this.src='https://placehold.co/80?text=IMG'">
               <div class="spot-content">
                   <div class="spot-badges">
@@ -216,48 +175,72 @@
                       <span class="badge">${item.time}</span>
                   </div>
                   <h3>${item.title}</h3>
-                  <div class="spot-data-row">
-                      <span class="color-indicator" style="background-color: ${item.color}; box-shadow: 0 0 8px ${item.color};"></span>
-                      <span>${item.sentiment}</span>
+                  
+                  <div class="meta-grid">
+                      <div class="meta-item">
+                          <span class="meta-icon">❤️</span> ${item.sentiment}
+                      </div>
+                       <div class="meta-item">
+                          <span class="meta-icon">📐</span> ${item.dims}
+                      </div>
+                      <div class="meta-item" style="grid-column: span 2;">
+                          <span class="meta-icon">🎨</span> 
+                          <span class="color-sample" style="background:${item.color}; box-shadow: 0 0 6px ${item.color}"></span>
+                          ${item.color}
+                      </div>
                   </div>
+
               </div>
           </div>
       `;
       cardsContainer.innerHTML += html;
 
-      // B. Ajouter le marqueur sur la carte (Style néon)
+      // B. Ajouter le marqueur et STOCKER SA RÉFÉRENCE
       const marker = L.circleMarker(item.coords, {
-          color: '#00d2ff',      // Contour bleu cyan néon
-          weight: 2,
-          fillColor: item.color, // Couleur intérieure selon la donnée
-          fillOpacity: 0.7,
-          radius: 8
+          color: '#00d2ff', weight: 2, fillColor: item.color, fillOpacity: 0.7, radius: 8
       }).addTo(map);
 
-      // Popup au style sombre
       marker.bindPopup(`
         <img src="${item.file}" class="popup-img">
         <b>${item.title}</b><br>
         Sentiment: ${item.sentiment}
       `);
       
+      // IMPORTANT : On sauvegarde le marqueur dans notre objet de référence
+      markersById[item.id] = marker;
       pathCoords.push(item.coords);
   });
 
-  // C. Tracer le chemin (Ligne style néon)
+  // C. Tracer le chemin
   L.polyline(pathCoords, {
-      color: '#00d2ff', // Ligne bleu cyan néon
-      weight: 3,
-      opacity: 0.8,
-      dashArray: '5, 10' // Pointillés
+      color: '#00d2ff', weight: 3, opacity: 0.8, dashArray: '5, 10'
   }).addTo(map);
 
-  // Fonction pour centrer la carte quand on clique sur une carte latérale
-  function focusOnMap(lat, lon, id) {
-    map.setView([lat, lon], 18);
+  // --- 4. FONCTION D'INTERACTION (CLIC CARTE -> OUVRE POPUP) ---
+  let currentActiveCard = null;
+
+  function openSpotOnMap(id) {
+      const marker = markersById[id]; // On retrouve le bon marqueur grâce à l'ID
+      if (marker) {
+          // 1. Centrer la carte sur le marqueur
+          map.setView(marker.getLatLng(), 18, { animate: true, duration: 1 });
+          
+          // 2. OUVRIR LA POPUP (ce qui affiche la photo sur la carte)
+          marker.openPopup();
+
+          // 3. Gestion visuelle de la carte active dans le panneau latéral
+          if (currentActiveCard) {
+             currentActiveCard.classList.remove('active-card');
+          }
+          const newActiveCard = document.getElementById(`card-${id}`);
+          if (newActiveCard) {
+              newActiveCard.classList.add('active-card');
+              currentActiveCard = newActiveCard;
+          }
+      }
   }
 
-  // Ajuster la vue pour tout voir au chargement
+  // Ajuster la vue au chargement
   map.fitBounds(pathCoords, { padding: [50, 50] });
 
 </script>
