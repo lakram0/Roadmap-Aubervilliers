@@ -1,100 +1,265 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parcours Complet - Aubervilliers</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parcours Photos — Aubervilliers (Dark Mode)</title>
 
-    <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f6f7; --text: #333; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; margin-bottom: 30px; }
-        h1 { color: var(--primary); }
-        #map { height: 400px; width: 100%; border-radius: 12px; margin-bottom: 40px; border: 2px solid #fff; }
-        .timeline { display: flex; flex-direction: column; gap: 30px; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }
-        @media (max-width: 768px) { .card { grid-template-columns: 1fr; } }
-        .card-img { width: 100%; height: 100%; object-fit: cover; min-height: 250px; }
-        .card-content { padding: 25px; }
-        .step-badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.8em; font-weight: bold; display: inline-block; margin-bottom: 10px; }
-        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 0.85em; margin-top: 15px; }
-        .color-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; border: 1px solid #ccc; }
-    </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <style>
+    /* --- NOUVELLE PALETTE DE COULEURS (STYLE NÉON/DARK) --- */
+    :root {
+      --bg-main: #0b1220;    /* Fond général très sombre */
+      --bg-panel: #111a2e;   /* Fond du panneau latéral */
+      --card-bg: #1a2639;    /* Couleur des cartes (bleu foncé comme l'exemple) */
+      --text-light: #e8eefc; /* Texte blanc/clair */
+      --text-muted: #8b9bbd; /* Texte secondaire gris/bleuté */
+      --accent: #00d2ff;     /* Bleu cyan fluo pour les accents */
+      --border-color: rgba(255,255,255,0.1);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-light);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header simplifié */
+    header {
+      padding: 15px 20px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; letter-spacing: 0.5px; }
+    header .meta { font-size: 0.9rem; color: var(--accent); }
+
+    /* Layout principal */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden; /* Important pour le scroll */
+    }
+
+    /* Panneau latéral (Sidebar) */
+    .sidebar {
+      width: 400px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-color);
+      overflow-y: auto; /* Scroll uniquement ici */
+      padding: 20px;
+      flex-shrink: 0;
+    }
+
+    /* --- NOUVEAU DESIGN DES CARTES (style de ton image) --- */
+    .spot-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 15px;
+      display: flex; /* Disposition horizontale : image à gauche, texte à droite */
+      gap: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.2s, border-color 0.2s;
+      cursor: pointer;
+    }
+    .spot-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    /* Petite image carrée à gauche */
+    .spot-thumb {
+      width: 85px;
+      height: 85px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid rgba(0, 210, 255, 0.2);
+    }
+
+    /* Contenu texte à droite */
+    .spot-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Badges supérieurs (Time / Coord) - Style Cyan */
+    .spot-badges {
+      display: flex; gap: 8px; margin-bottom: 6px;
+    }
+    .badge {
+      background: rgba(0, 210, 255, 0.15); /* Fond cyan transparent */
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spot-content h3 {
+      margin: 0 0 6px 0;
+      font-size: 1rem;
+      color: var(--text-light);
+      line-height: 1.3;
+    }
+
+    /* Données secondaires (Sentiment / Couleur) */
+    .spot-data-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .color-indicator {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+      box-shadow: 0 0 5px currentColor;
+    }
+
+    /* Carte (Map) */
+    #map {
+      flex: 1; /* Prend tout le reste de l'espace */
+      height: 100%;
+      background: #0b1220;
+    }
+
+    /* Style des Popups sur la carte */
+    .leaflet-popup-content-wrapper {
+      background: var(--bg-panel); color: var(--text-light); border-radius: 8px;
+    }
+    .leaflet-popup-tip { background: var(--bg-panel); }
+    .popup-img { width: 100%; border-radius: 6px; margin-bottom: 8px; }
+
+    /* Responsive pour mobile */
+    @media (max-width: 768px) {
+      .layout { flex-direction: column-reverse; } /* Carte en haut, liste en bas sur mobile */
+      .sidebar { width: 100%; height: 50vh; }
+      #map { height: 50vh; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Parcours Visuel Intégral (17 Étapes)</h1>
-        <p>Analyse dimensionnelle et sensible du campus Condorcet et ses environs.</p>
-    </header>
+  <header>
+    <h1>Parcours Aubervilliers</h1>
+    <div class="meta">Visualisation Dark Mode</div>
+  </header>
 
-    <div id="map"></div>
-    <div class="timeline" id="gallery"></div>
-</div>
+  <div class="layout">
+    <aside class="sidebar" id="cards-container">
+      </aside>
+
+    <main id="map"></main>
+  </div>
 
 <script>
-    // --- DONNÉES COMPLÈTES (17 PHOTOS) ---
-    const data = [
-        { id: 1, file: "images/photo04.jpg", title: "Humathèque (Ext.)", desc: "Architecture blanche et ciel bleu.", coords: [48.9105, 2.3660], dims: "3024x4032", sentiment: "Moderne 🟢", colors: ["#FFF", "#3498DB"] },
-        { id: 2, file: "images/photo02.jpg", title: "MSH Paris Nord", desc: "Façade rythmée et arbre rouge.", coords: [48.9112, 2.3655], dims: "3024x4032", sentiment: "Graphique 🟠", colors: ["#F5B041", "#A93226"] },
-        { id: 3, file: "images/photo03.jpg", title: "Allée Platanes", desc: "Perspective urbaine verte.", coords: [48.9115, 2.3670], dims: "3024x4032", sentiment: "Urbain 🟠", colors: ["#229954", "#F1C40F"] },
-        { id: 4, file: "images/photo10.jpg", title: "Contre-jour Végétal", desc: "Lumière à travers les branches.", coords: [48.9120, 2.3680], dims: "3024x4032", sentiment: "Espoir 🟢", colors: ["#85C1E9", "#F39C12"] },
-        { id: 5, file: "images/photo17.jpg", title: "Rayons & Bâtiment", desc: "Soleil éclatant sur vitres.", coords: [48.9121, 2.3681], dims: "3024x4032", sentiment: "Éblouissant 🟢", colors: ["#3498DB", "#FFFFFF"] },
-        { id: 6, file: "images/photo09.jpg", title: "Canopée Jaune", desc: "Feuilles d'automne dorées.", coords: [48.9122, 2.3682], dims: "3024x4032", sentiment: "Chaud 🟢", colors: ["#D35400", "#F39C12"] },
-        { id: 7, file: "images/photo12.jpg", title: "Fresque Murale", desc: "Street art coloré.", coords: [48.9124, 2.3683], dims: "3024x4032", sentiment: "Artistique 🟠", colors: ["#E74C3C", "#8E44AD"] },
-        { id: 8, file: "images/photo05.jpg", title: "Parc (Ombres)", desc: "Chemin terre battue paisible.", coords: [48.9125, 2.3685], dims: "3024x4032", sentiment: "Paisible 🟢", colors: ["#1E8449", "#566573"] },
-        { id: 9, file: "images/photo08.jpg", title: "Grand Arbre", desc: "Silhouette majestueuse.", coords: [48.9126, 2.3688], dims: "3024x4032", sentiment: "Nature 🟢", colors: ["#145A32", "#2E4053"] },
-        { id: 10, file: "images/photo06.jpg", title: "Statue Taureau", desc: "Sculpture bronze R. Khimoune.", coords: [48.9128, 2.3690], dims: "3024x4032", sentiment: "Curieux 🟠", colors: ["#7D6608", "#196F3D"] },
-        { id: 11, file: "images/photo07.jpg", title: "Plaque 'Camille'", desc: "Signature artiste au sol.", coords: [48.9128, 2.3691], dims: "3024x4032", sentiment: "Détail 🟢", colors: ["#95A5A6", "#2C3E50"] },
-        { id: 12, file: "images/photo11.jpg", title: "Campus Vert", desc: "Pelouse et modernité.", coords: [48.9130, 2.3695], dims: "3024x4032", sentiment: "Ouvert 🟢", colors: ["#2ECC71", "#3498DB"] },
-        { id: 13, file: "images/photo16.jpg", title: "Esplanade", desc: "Vue large et ciel immense.", coords: [48.9132, 2.3698], dims: "3024x4032", sentiment: "Vaste 🟢", colors: ["#5DADE2", "#58D68D"] },
-        { id: 14, file: "images/photo01.jpg", title: "Vieux Aubervilliers", desc: "Pierre meulière historique.", coords: [48.9135, 2.3700], dims: "3024x4032", sentiment: "Historique 🔴", colors: ["#A93226", "#D7BDE2"] },
-        { id: 15, file: "images/photo14.jpg", title: "Hall Entrée", desc: "Espace intérieur lumineux.", coords: [48.9140, 2.3665], dims: "3024x4032", sentiment: "Accueil 🟢", colors: ["#FDFEFE", "#BDC3C7"] },
-        { id: 16, file: "images/photo13.jpg", title: "Atrium (Bas)", desc: "Verrière et design.", coords: [48.9142, 2.3665], dims: "3024x4032", sentiment: "Aérien 🟢", colors: ["#AED6F1", "#FBFCFC"] },
-        { id: 17, file: "images/photo15.jpg", title: "Atrium (Haut)", desc: "Vue plongeante complexe.", coords: [48.9145, 2.3665], dims: "3024x4032", sentiment: "Complexe 🟠", colors: ["#5D6D7E", "#3498DB"] }
-    ];
+  // --- 1. LES DONNÉES (Tes 17 photos) ---
+  // Assure-toi que les noms de fichiers sont exacts dans ton dossier GitHub
+  const data = [
+        { id: 1, file: "images/photo04.jpg", title: "Humathèque (Ext.)", coords: [48.9105, 2.3660], time: "10:15", sentiment: "Moderne", color: "#3498DB" },
+        { id: 2, file: "images/photo02.jpg", title: "MSH Paris Nord", coords: [48.9112, 2.3655], time: "10:20", sentiment: "Graphique", color: "#A93226" },
+        { id: 3, file: "images/photo03.jpg", title: "Allée Platanes", coords: [48.9115, 2.3670], time: "10:25", sentiment: "Urbain", color: "#F1C40F" },
+        { id: 4, file: "images/photo10.jpg", title: "Contre-jour Végétal", coords: [48.9120, 2.3680], time: "10:30", sentiment: "Espoir", color: "#F39C12" },
+        { id: 5, file: "images/photo17.jpg", title: "Rayons & Bâtiment", coords: [48.9121, 2.3681], time: "10:35", sentiment: "Éblouissant", color: "#FFFFFF" },
+        { id: 6, file: "images/photo09.jpg", title: "Canopée Jaune", coords: [48.9122, 2.3682], time: "10:40", sentiment: "Chaud", color: "#D35400" },
+        { id: 7, file: "images/photo12.jpg", title: "Fresque Murale", coords: [48.9124, 2.3683], time: "10:45", sentiment: "Artistique", color: "#8E44AD" },
+        { id: 8, file: "images/photo05.jpg", title: "Parc (Ombres)", coords: [48.9125, 2.3685], time: "10:50", sentiment: "Paisible", color: "#1E8449" },
+        { id: 9, file: "images/photo08.jpg", title: "Grand Arbre", coords: [48.9126, 2.3688], time: "10:55", sentiment: "Nature", color: "#145A32" },
+        { id: 10, file: "images/photo06.jpg", title: "Statue Taureau", coords: [48.9128, 2.3690], time: "11:00", sentiment: "Curieux", color: "#7D6608" },
+        { id: 11, file: "images/photo07.jpg", title: "Plaque 'Camille'", coords: [48.9128, 2.3691], time: "11:05", sentiment: "Détail", color: "#95A5A6" },
+        { id: 12, file: "images/photo11.jpg", title: "Campus Vert", coords: [48.9130, 2.3695], time: "11:10", sentiment: "Ouvert", color: "#2ECC71" },
+        { id: 13, file: "images/photo16.jpg", title: "Esplanade", coords: [48.9132, 2.3698], time: "11:15", sentiment: "Vaste", color: "#5DADE2" },
+        { id: 14, file: "images/photo01.jpg", title: "Vieux Aubervilliers", coords: [48.9135, 2.3700], time: "11:25", sentiment: "Historique", color: "#A93226" },
+        { id: 15, file: "images/photo14.jpg", title: "Hall Entrée", coords: [48.9140, 2.3665], time: "11:35", sentiment: "Accueil", color: "#BDC3C7" },
+        { id: 16, file: "images/photo13.jpg", title: "Atrium (Bas)", coords: [48.9142, 2.3665], time: "11:40", sentiment: "Aérien", color: "#AED6F1" },
+        { id: 17, file: "images/photo15.jpg", title: "Atrium (Haut)", coords: [48.9145, 2.3665], time: "11:45", sentiment: "Complexe", color: "#5D6D7E" }
+  ];
 
-    // --- CARTE & GALERIE ---
-    const map = L.map('map').setView([48.9125, 2.3680], 16);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OSM & CARTO' }).addTo(map);
-    const gallery = document.getElementById('gallery');
-    const pathCoords = [];
+  // --- 2. INITIALISATION DE LA CARTE (STYLE SOMBRE) ---
+  const map = L.map('map').setView([48.9125, 2.3680], 16);
 
-    data.forEach(item => {
-        // HTML Card
-        gallery.innerHTML += `
-            <div class="card" id="spot-${item.id}">
-                <img src="${item.file}" class="card-img" alt="${item.title}" onerror="this.src='https://placehold.co/600x400?text=Photo+Manquante'">
-                <div class="card-content">
-                    <span class="step-badge">Étape ${item.id}</span>
-                    <h2>${item.title}</h2>
-                    <p style="color:#666; font-style:italic;">${item.desc}</p>
-                    <div class="data-grid">
-                        <div><strong>📍 Coord.</strong>${item.coords[0].toFixed(4)}, ${item.coords[1].toFixed(4)}</div>
-                        <div><strong>📐 Dims.</strong>${item.dims}</div>
-                        <div><strong>❤️ Sentiment</strong>${item.sentiment}</div>
-                        <div><strong>🎨 Couleurs</strong><span class="color-dot" style="background:${item.colors[0]}"></span><span class="color-dot" style="background:${item.colors[1]}"></span></div>
-                    </div>
-                </div>
-            </div>`;
-        
-        // Marker
-        const marker = L.circleMarker(item.coords, { color: '#e67e22', fillColor: '#2c3e50', fillOpacity: 0.8, radius: 7 }).addTo(map);
-        marker.bindPopup(`<b>${item.title}</b><br><img src="${item.file}" style="width:80px;border-radius:4px;">`);
-        marker.on('click', () => document.getElementById(`spot-${item.id}`).scrollIntoView({behavior: "smooth", block: "center"}));
-        pathCoords.push(item.coords);
-    });
+  // C'EST ICI QUE LA MAGIE OPÈRE : On utilise un fond de carte "Dark Matter"
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 20
+  }).addTo(map);
 
-    // Polyline
-    L.polyline(pathCoords, { color: '#e67e22', weight: 3, dashArray: '5, 5' }).addTo(map);
-    map.fitBounds(pathCoords, { padding: [50, 50] });
+
+  // --- 3. GÉNÉRATION DU CONTENU ---
+  const cardsContainer = document.getElementById('cards-container');
+  const pathCoords = [];
+
+  data.forEach(item => {
+      // A. Générer la CARTE HTML (Nouveau design horizontal)
+      // On utilise des classes CSS différentes pour coller au style de ton image
+      const html = `
+          <div class="spot-card" id="spot-${item.id}" onclick="focusOnMap(${item.coords[0]}, ${item.coords[1]}, ${item.id})">
+              <img src="${item.file}" alt="${item.title}" class="spot-thumb" onerror="this.src='https://placehold.co/80?text=IMG'">
+              <div class="spot-content">
+                  <div class="spot-badges">
+                      <span class="badge">#${item.id}</span>
+                      <span class="badge">${item.time}</span>
+                  </div>
+                  <h3>${item.title}</h3>
+                  <div class="spot-data-row">
+                      <span class="color-indicator" style="background-color: ${item.color}; box-shadow: 0 0 8px ${item.color};"></span>
+                      <span>${item.sentiment}</span>
+                  </div>
+              </div>
+          </div>
+      `;
+      cardsContainer.innerHTML += html;
+
+      // B. Ajouter le marqueur sur la carte (Style néon)
+      const marker = L.circleMarker(item.coords, {
+          color: '#00d2ff',      // Contour bleu cyan néon
+          weight: 2,
+          fillColor: item.color, // Couleur intérieure selon la donnée
+          fillOpacity: 0.7,
+          radius: 8
+      }).addTo(map);
+
+      // Popup au style sombre
+      marker.bindPopup(`
+        <img src="${item.file}" class="popup-img">
+        <b>${item.title}</b><br>
+        Sentiment: ${item.sentiment}
+      `);
+      
+      pathCoords.push(item.coords);
+  });
+
+  // C. Tracer le chemin (Ligne style néon)
+  L.polyline(pathCoords, {
+      color: '#00d2ff', // Ligne bleu cyan néon
+      weight: 3,
+      opacity: 0.8,
+      dashArray: '5, 10' // Pointillés
+  }).addTo(map);
+
+  // Fonction pour centrer la carte quand on clique sur une carte latérale
+  function focusOnMap(lat, lon, id) {
+    map.setView([lat, lon], 18);
+  }
+
+  // Ajuster la vue pour tout voir au chargement
+  map.fitBounds(pathCoords, { padding: [50, 50] });
+
 </script>
-
 </body>
 </html>
