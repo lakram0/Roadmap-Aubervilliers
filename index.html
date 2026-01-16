@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aubervilliers - Dashboard Final</title>
+  <title>Aubervilliers - Analyse Complète</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -39,71 +39,68 @@
     /* LAYOUT */
     .layout { display: flex; height: calc(100vh - 50px); overflow: hidden; }
 
-    /* SIDEBAR (GAUCHE) */
+    /* SIDEBAR */
     .sidebar {
-      width: 420px; background: var(--bg-panel);
+      width: 460px; /* Plus large pour afficher tout le texte */
+      background: var(--bg-panel);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       flex-shrink: 0;
-      overflow-y: auto; /* Permet de scroller toute la barre latérale */
+      overflow-y: auto;
     }
 
-    /* SECTION 1 : DASHBOARD (Les 3 Graphes) */
-    .dashboard-panel {
-      padding: 15px;
-      background: #0f1623;
-      border-bottom: 1px solid var(--border);
-    }
-    .panel-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px; font-weight: bold; border-left: 3px solid var(--accent); padding-left: 10px; }
+    /* ZONE GRAPHES */
+    .dashboard-panel { padding: 15px; background: #0f1623; border-bottom: 1px solid var(--border); }
+    .charts-wrapper { display: flex; flex-direction: column; gap: 15px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .chart-box { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 8px; border: 1px solid var(--border); }
+    .chart-title { font-size: 0.7rem; text-align: center; margin-bottom: 5px; color: #ccc; }
+    .canvas-container { position: relative; height: 120px; width: 100%; }
 
-    /* Grille pour les chiffres */
-    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-    .kpi-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; }
-    .kpi-val { font-size: 1.2rem; font-weight: bold; color: white; }
-    .kpi-label { font-size: 0.7rem; color: var(--text-muted); }
-
-    /* Conteneurs des Graphes (FIXED HEIGHT pour éviter les bugs d'affichage) */
-    .charts-wrapper { display: flex; flex-direction: column; gap: 20px; }
-    
-    .chart-box {
-      background: rgba(255,255,255,0.02);
-      border-radius: 8px;
-      padding: 10px;
-      border: 1px solid var(--border);
-    }
-    .chart-title { font-size: 0.75rem; text-align: center; margin-bottom: 5px; color: #ccc; }
-    
-    .canvas-container {
-      position: relative;
-      height: 160px; /* Hauteur forcée pour éviter l'overlap */
-      width: 100%;
-    }
-
-    /* SECTION 2 : LISTE DES PHOTOS */
+    /* ZONE LISTE PHOTOS (DESIGN DÉTAILLÉ) */
     .list-container { padding: 15px; }
-    
+    .section-title { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; margin: 20px 0 10px 0; font-weight: bold; }
+
     .spot-card {
-      background: var(--card-bg); border-radius: 8px; padding: 10px;
-      margin-bottom: 12px; display: flex; gap: 10px;
-      border: 1px solid transparent; cursor: pointer; transition: 0.2s;
+      background: var(--card-bg); border-radius: 8px; padding: 12px;
+      margin-bottom: 15px; border: 1px solid transparent; 
+      cursor: pointer; transition: 0.2s;
     }
     .spot-card:hover, .spot-card.active { border-color: var(--accent); background: #23304a; }
+
+    /* Layout interne de la carte */
+    .card-header { display: flex; gap: 12px; margin-bottom: 10px; }
+    .spot-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); }
+    .card-title-group { flex: 1; }
+    .spot-title { font-size: 1rem; font-weight: 600; color: white; margin-bottom: 4px; }
+    .spot-id { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; font-weight: bold; }
     
-    .spot-img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
-    .spot-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .spot-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
-    .spot-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 8px; }
-    .badge { padding: 2px 6px; border-radius: 4px; background: rgba(0, 210, 255, 0.1); color: var(--accent); }
+    .tags-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+    .tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: #ccc; }
+    .tag.sentiment { background: rgba(0, 210, 255, 0.15); color: var(--accent); }
+
+    .card-body { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; }
+    .spot-desc { font-size: 0.8rem; color: #ccc; line-height: 1.4; margin-bottom: 8px; font-style: italic; }
+    
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75rem; color: var(--text-muted); }
+    .meta-item b { color: white; }
+    .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; border: 1px solid #fff; }
 
     /* MAP */
     #map { flex: 1; height: 100%; background: #0b1220; }
 
-    /* POPUP */
-    .leaflet-popup-content-wrapper { background: var(--bg-panel); color: white; }
-    .leaflet-popup-tip { background: var(--bg-panel); }
-    .popup-img { width: 100%; border-radius: 4px; margin-bottom: 5px; }
+    /* POPUP (Personnalisation Dark) */
+    .leaflet-popup-content-wrapper { background: var(--bg-panel); color: white; border: 1px solid var(--accent); border-radius: 8px; }
+    .leaflet-popup-tip { background: var(--bg-panel); border-top: 1px solid var(--accent); }
+    .leaflet-container a.leaflet-popup-close-button { color: white; }
+    
+    /* Contenu Popup */
+    .popup-wrapper { width: 260px; }
+    .popup-img { width: 100%; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.2); }
+    .popup-title { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: var(--accent); }
+    .popup-desc { font-size: 0.8rem; line-height: 1.4; margin-bottom: 8px; color: #ddd; }
+    .popup-meta { background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px; font-size: 0.75rem; }
 
-    /* Responsive mobile */
     @media (max-width: 768px) {
       .layout { flex-direction: column-reverse; }
       .sidebar { width: 100%; height: 50vh; }
@@ -113,56 +110,42 @@
 <body>
 
   <header>
-    <h1>Données Aubervilliers</h1>
-    <span style="font-size:0.8rem; color:var(--accent);">● Live Dashboard</span>
+    <h1>Aubervilliers — Analyse Complète</h1>
+    <span style="font-size:0.8rem; color:var(--accent);">Live Data</span>
   </header>
 
   <div class="layout">
-    
     <aside class="sidebar">
       
       <div class="dashboard-panel">
-        <div class="panel-title">Analyse Globale</div>
-
-        <div class="kpi-grid">
-          <div class="kpi-box">
-            <div class="kpi-val">17</div>
-            <div class="kpi-label">Étapes</div>
-          </div>
-          <div class="kpi-box">
-            <div class="kpi-val">3</div>
-            <div class="kpi-label">Typologies</div>
-          </div>
-        </div>
-
+        <div class="section-title" style="margin-top:0;">Statistiques Visuelles</div>
         <div class="charts-wrapper">
-          
           <div class="chart-box">
             <div class="chart-title">Répartition des Sentiments</div>
-            <div class="canvas-container">
+            <div class="canvas-container" style="height:140px;">
               <canvas id="chart1"></canvas>
             </div>
           </div>
-
-          <div class="chart-box">
-            <div class="chart-title">Typologie des Espaces</div>
-            <div class="canvas-container">
-              <canvas id="chart2"></canvas>
+          
+          <div class="chart-row">
+            <div class="chart-box">
+              <div class="chart-title">Typologies</div>
+              <div class="canvas-container">
+                <canvas id="chart2"></canvas>
+              </div>
+            </div>
+            <div class="chart-box">
+              <div class="chart-title">Densité</div>
+              <div class="canvas-container">
+                <canvas id="chart3"></canvas>
+              </div>
             </div>
           </div>
-
-          <div class="chart-box">
-            <div class="chart-title">Rythme & Densité du Parcours</div>
-            <div class="canvas-container">
-              <canvas id="chart3"></canvas>
-            </div>
-          </div>
-
         </div>
       </div>
 
       <div class="list-container" id="cards-list">
-        <div class="panel-title">Timeline du Parcours</div>
+        <div class="section-title">Détails des Étapes (17)</div>
         </div>
     </aside>
 
@@ -170,25 +153,25 @@
   </div>
 
 <script>
-  // --- DONNÉES ENRICHIES (Avec Type et Densité pour les graphes) ---
+  // --- DONNÉES COMPLÈTES ---
   const data = [
-    { id: 1, file: "images/photo04.jpg", title: "Humathèque", coords: [48.9105, 2.3660], type: "Architecture", density: 3, sentiment: "Moderne", color: "#3498DB", desc: "Architecture blanche clinique, lignes épurées." },
-    { id: 2, file: "images/photo02.jpg", title: "MSH Paris Nord", coords: [48.9112, 2.3655], type: "Architecture", density: 6, sentiment: "Graphique", color: "#A93226", desc: "Rythme vertical des brise-soleil et arbre rouge." },
-    { id: 3, file: "images/photo03.jpg", title: "Allée Platanes", coords: [48.9115, 2.3670], type: "Urbain", density: 7, sentiment: "Urbain", color: "#F1C40F", desc: "Perspective urbaine verte avec signalétique." },
-    { id: 4, file: "images/photo10.jpg", title: "Contre-jour", coords: [48.9120, 2.3680], type: "Nature", density: 2, sentiment: "Espoir", color: "#F39C12", desc: "Lumière traversant les branches." },
-    { id: 5, file: "images/photo17.jpg", title: "Rayons & Bâtiment", coords: [48.9121, 2.3681], type: "Architecture", density: 4, sentiment: "Éblouissant", color: "#FFFFFF", desc: "Soleil éclatant sur façade vitrée." },
-    { id: 6, file: "images/photo09.jpg", title: "Canopée Jaune", coords: [48.9122, 2.3682], type: "Nature", density: 3, sentiment: "Chaud", color: "#D35400", desc: "Feuillage dense d'automne." },
-    { id: 7, file: "images/photo12.jpg", title: "Fresque Murale", coords: [48.9124, 2.3683], type: "Art", density: 8, sentiment: "Artistique", color: "#8E44AD", desc: "Street art coloré au sol." },
-    { id: 8, file: "images/photo05.jpg", title: "Parc (Ombres)", coords: [48.9125, 2.3685], type: "Nature", density: 1, sentiment: "Paisible", color: "#1E8449", desc: "Chemin calme en terre battue." },
-    { id: 9, file: "images/photo08.jpg", title: "Grand Arbre", coords: [48.9126, 2.3688], type: "Nature", density: 3, sentiment: "Nature", color: "#145A32", desc: "Silhouette d'arbre contre le ciel." },
-    { id: 10, file: "images/photo06.jpg", title: "Statue Taureau", coords: [48.9128, 2.3690], type: "Art", density: 5, sentiment: "Curieux", color: "#7D6608", desc: "Sculpture en bronze texturé." },
-    { id: 11, file: "images/photo07.jpg", title: "Plaque 'Camille'", coords: [48.9128, 2.3691], type: "Art", density: 2, sentiment: "Détail", color: "#95A5A6", desc: "Signature de l'artiste au sol." },
-    { id: 12, file: "images/photo11.jpg", title: "Campus Vert", coords: [48.9130, 2.3695], type: "Nature", density: 4, sentiment: "Ouvert", color: "#2ECC71", desc: "Pelouse et bâtiments modernes." },
-    { id: 13, file: "images/photo16.jpg", title: "Esplanade", coords: [48.9132, 2.3698], type: "Urbain", density: 4, sentiment: "Vaste", color: "#5DADE2", desc: "Grand espace ouvert sous le ciel." },
-    { id: 14, file: "images/photo01.jpg", title: "Vieux Aubervilliers", coords: [48.9135, 2.3700], type: "Architecture", density: 9, sentiment: "Historique", color: "#A93226", desc: "Façade ancienne en pierre meulière." },
-    { id: 15, file: "images/photo14.jpg", title: "Hall Entrée", coords: [48.9140, 2.3665], type: "Intérieur", density: 5, sentiment: "Accueil", color: "#BDC3C7", desc: "Grand hall lumineux." },
-    { id: 16, file: "images/photo13.jpg", title: "Atrium (Bas)", coords: [48.9142, 2.3665], type: "Intérieur", density: 4, sentiment: "Aérien", color: "#AED6F1", desc: "Verrière et suspensions." },
-    { id: 17, file: "images/photo15.jpg", title: "Atrium (Haut)", coords: [48.9145, 2.3665], type: "Intérieur", density: 7, sentiment: "Complexe", color: "#5D6D7E", desc: "Passerelles et vitres." }
+    { id: 1, file: "images/photo04.jpg", title: "Humathèque", coords: [48.9105, 2.3660], type: "Architecture", density: 3, sentiment: "Moderne", dims: "3024x4032", color: "#3498DB", desc: "Architecture blanche clinique, lignes épurées. Contraste fort avec le ciel bleu." },
+    { id: 2, file: "images/photo02.jpg", title: "MSH Paris Nord", coords: [48.9112, 2.3655], type: "Architecture", density: 6, sentiment: "Graphique", dims: "3024x4032", color: "#A93226", desc: "Rythme vertical des brise-soleil et présence organique de l'arbre rouge." },
+    { id: 3, file: "images/photo03.jpg", title: "Allée Platanes", coords: [48.9115, 2.3670], type: "Urbain", density: 7, sentiment: "Urbain", dims: "3024x4032", color: "#F1C40F", desc: "Perspective urbaine verte avec signalétique routière marquante." },
+    { id: 4, file: "images/photo10.jpg", title: "Contre-jour", coords: [48.9120, 2.3680], type: "Nature", density: 2, sentiment: "Espoir", dims: "3024x4032", color: "#F39C12", desc: "Lumière divine traversant les branches, créant une ambiance mystique." },
+    { id: 5, file: "images/photo17.jpg", title: "Rayons & Bâtiment", coords: [48.9121, 2.3681], type: "Architecture", density: 4, sentiment: "Éblouissant", dims: "3024x4032", color: "#FFFFFF", desc: "Soleil éclatant se reflétant sur la façade vitrée moderne." },
+    { id: 6, file: "images/photo09.jpg", title: "Canopée Jaune", coords: [48.9122, 2.3682], type: "Nature", density: 3, sentiment: "Chaud", dims: "3024x4032", color: "#D35400", desc: "Texture dense du feuillage d'automne en contre-plongée." },
+    { id: 7, file: "images/photo12.jpg", title: "Fresque Murale", coords: [48.9124, 2.3683], type: "Art", density: 8, sentiment: "Artistique", dims: "3024x4032", color: "#8E44AD", desc: "Street art coloré au sol, apportant du dynamisme au béton." },
+    { id: 8, file: "images/photo05.jpg", title: "Parc (Ombres)", coords: [48.9125, 2.3685], type: "Nature", density: 1, sentiment: "Paisible", dims: "3024x4032", color: "#1E8449", desc: "Chemin calme en terre battue avec jeux d'ombres longues." },
+    { id: 9, file: "images/photo08.jpg", title: "Grand Arbre", coords: [48.9126, 2.3688], type: "Nature", density: 3, sentiment: "Nature", dims: "3024x4032", color: "#145A32", desc: "Silhouette majestueuse d'un arbre contre le ciel bleu." },
+    { id: 10, file: "images/photo06.jpg", title: "Statue Taureau", coords: [48.9128, 2.3690], type: "Art", density: 5, sentiment: "Curieux", dims: "3024x4032", color: "#7D6608", desc: "Sculpture en bronze texturé représentant un taureau (R. Khimoune)." },
+    { id: 11, file: "images/photo07.jpg", title: "Plaque 'Camille'", coords: [48.9128, 2.3691], type: "Art", density: 2, sentiment: "Détail", dims: "3024x4032", color: "#95A5A6", desc: "Signature de l'artiste ancrée dans le sol, détail historique." },
+    { id: 12, file: "images/photo11.jpg", title: "Campus Vert", coords: [48.9130, 2.3695], type: "Nature", density: 4, sentiment: "Ouvert", dims: "3024x4032", color: "#2ECC71", desc: "Vaste pelouse verte entourée de bâtiments universitaires récents." },
+    { id: 13, file: "images/photo16.jpg", title: "Esplanade", coords: [48.9132, 2.3698], type: "Urbain", density: 4, sentiment: "Vaste", dims: "3024x4032", color: "#5DADE2", desc: "Grand espace ouvert minéral sous un ciel immense." },
+    { id: 14, file: "images/photo01.jpg", title: "Vieux Aubervilliers", coords: [48.9135, 2.3700], type: "Architecture", density: 9, sentiment: "Historique", dims: "3024x4032", color: "#A93226", desc: "Façade traditionnelle en pierre meulière, typique de la banlieue." },
+    { id: 15, file: "images/photo14.jpg", title: "Hall Entrée", coords: [48.9140, 2.3665], type: "Intérieur", density: 5, sentiment: "Accueil", dims: "3024x4032", color: "#BDC3C7", desc: "Grand hall lumineux invitant à l'entrée." },
+    { id: 16, file: "images/photo13.jpg", title: "Atrium (Bas)", coords: [48.9142, 2.3665], type: "Intérieur", density: 4, sentiment: "Aérien", dims: "3024x4032", color: "#AED6F1", desc: "Verrière et suspensions modernes vues en contre-plongée." },
+    { id: 17, file: "images/photo15.jpg", title: "Atrium (Haut)", coords: [48.9145, 2.3665], type: "Intérieur", density: 7, sentiment: "Complexe", dims: "3024x4032", color: "#5D6D7E", desc: "Jeu complexe de passerelles vitrées et de transparence." }
   ];
 
   // --- INIT CARTE ---
@@ -199,35 +182,69 @@
   const path = [];
   const list = document.getElementById('cards-list');
 
-  // --- GÉNÉRATION LISTE + MARQUEURS ---
+  // --- GÉNÉRATION : LISTE + POPUPS DÉTAILLÉS ---
   data.forEach(item => {
-    // Liste
+    
+    // 1. CRÉATION DE LA CARTE DANS LA BARRE LATÉRALE (Liste)
     const el = document.createElement('div');
     el.className = 'spot-card';
     el.id = `card-${item.id}`;
     el.onclick = () => focusMap(item.id);
+    
+    // On injecte TOUTES les infos dans la carte latérale
     el.innerHTML = `
-      <img src="${item.file}" class="spot-img" onerror="this.src='https://placehold.co/70'">
-      <div class="spot-info">
-        <div class="spot-title">${item.id}. ${item.title}</div>
-        <div class="spot-meta">
-          <span class="badge" style="color:${item.color}">${item.sentiment}</span>
-          <span>${item.type}</span>
+      <div class="card-header">
+        <img src="${item.file}" class="spot-img" onerror="this.src='https://placehold.co/80'">
+        <div class="card-title-group">
+          <div class="spot-id">Étape #${item.id}</div>
+          <div class="spot-title">${item.title}</div>
+          <div class="tags-row">
+            <span class="tag sentiment">${item.sentiment}</span>
+            <span class="tag">${item.type}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="spot-desc">${item.desc}</div>
+        <div class="meta-grid">
+          <div class="meta-item"><b>Dim:</b> ${item.dims}</div>
+          <div class="meta-item"><b>Densité:</b> ${item.density}/10</div>
+          <div class="meta-item" style="grid-column:span 2; display:flex; align-items:center;">
+            <b>Couleur:</b> 
+            <span class="color-dot" style="background:${item.color}; margin-left:5px;"></span> ${item.color}
+          </div>
         </div>
       </div>
     `;
     list.appendChild(el);
 
-    // Marqueur
-    const m = L.circleMarker(item.coords, { color: '#00d2ff', fillColor: item.color, fillOpacity: 0.8, radius: 7 }).addTo(map);
-    m.bindPopup(`<b>${item.title}</b><br><img src="${item.file}" class="popup-img"><br>${item.desc}`);
+    // 2. CRÉATION DU MARQUEUR + POPUP DÉTAILLÉ
+    const m = L.circleMarker(item.coords, { color: '#00d2ff', fillColor: item.color, fillOpacity: 0.9, radius: 8 }).addTo(map);
+    
+    // On injecte TOUTES les infos dans la popup aussi
+    const popupHTML = `
+      <div class="popup-wrapper">
+        <div class="popup-title">${item.id}. ${item.title}</div>
+        <img src="${item.file}" class="popup-img">
+        <div class="popup-desc">${item.desc}</div>
+        <div class="popup-meta">
+          <strong>Type:</strong> ${item.type} <br>
+          <strong>Sentiment:</strong> ${item.sentiment} <br>
+          <strong>Dimensions:</strong> ${item.dims} <br>
+          <strong>Couleur Dom.:</strong> <span style="color:${item.color}">● ${item.color}</span>
+        </div>
+      </div>
+    `;
+    m.bindPopup(popupHTML);
     markers[item.id] = m;
     path.push(item.coords);
   });
 
+  // Tracer le chemin
   L.polyline(path, { color: '#00d2ff', dashArray: '5,5', opacity: 0.5 }).addTo(map);
   map.fitBounds(path, { padding: [50, 50] });
 
+  // Fonction de focus
   function focusMap(id) {
     const m = markers[id];
     map.setView(m.getLatLng(), 18);
@@ -236,9 +253,9 @@
     document.getElementById(`card-${id}`).classList.add('active');
   }
 
-  // --- CONFIGURATION DES 3 GRAPHES (Chart.js) ---
+  // --- GRAPHES CHART.JS ---
   
-  // 1. Préparer les données
+  // Préparation données
   const sentimentCounts = {};
   const typeCounts = {};
   const densityData = data.map(d => d.density);
@@ -249,7 +266,7 @@
     typeCounts[d.type] = (typeCounts[d.type] || 0) + 1;
   });
 
-  // Graphe 1 : SENTIMENTS (Doughnut)
+  // Chart 1: Sentiments
   new Chart(document.getElementById('chart1'), {
     type: 'doughnut',
     data: {
@@ -260,30 +277,29 @@
         borderWidth: 0
       }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#ccc', boxWidth: 10, font: {size: 10} } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#ccc', boxWidth: 10, font: {size: 9} } } } }
   });
 
-  // Graphe 2 : TYPES D'ESPACES (Bar Horizontal)
+  // Chart 2: Types (Bar)
   new Chart(document.getElementById('chart2'), {
     type: 'bar',
     data: {
       labels: Object.keys(typeCounts),
       datasets: [{
-        label: 'Nombre de photos',
+        label: 'Qté',
         data: Object.values(typeCounts),
         backgroundColor: '#00d2ff',
-        borderRadius: 4
+        borderRadius: 3
       }]
     },
     options: { 
-      indexAxis: 'y',
       responsive: true, maintainAspectRatio: false, 
       plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color: '#8b9bbd' } }, y: { ticks: { color: '#fff' } } }
+      scales: { x: { ticks: { color: '#8b9bbd', font:{size:9} } }, y: { display:false } }
     }
   });
 
-  // Graphe 3 : DENSITÉ (Line)
+  // Chart 3: Densité (Line)
   new Chart(document.getElementById('chart3'), {
     type: 'line',
     data: {
@@ -293,13 +309,13 @@
         data: densityData,
         borderColor: '#ff00d4',
         backgroundColor: 'rgba(255, 0, 212, 0.1)',
-        tension: 0.4, fill: true, pointRadius: 2
+        tension: 0.4, fill: true, pointRadius: 0
       }]
     },
     options: { 
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { x: { display: false }, y: { display: false, min: 0 } }
+      scales: { x: { display: false }, y: { display: false } }
     }
   });
 
