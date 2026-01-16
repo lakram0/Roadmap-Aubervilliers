@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aubervilliers - Analyse Complète</title>
+  <title>Aubervilliers - Analyse Finale</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -26,40 +26,83 @@
       margin: 0; font-family: 'Segoe UI', sans-serif;
       background: var(--bg-main); color: var(--text-light);
       height: 100vh; display: flex; flex-direction: column;
+      overflow: hidden; /* Empêche le scroll global */
     }
 
     /* HEADER */
     header {
+      flex-shrink: 0;
       padding: 0 20px; height: 50px; background: var(--bg-panel);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
+      z-index: 1000;
     }
     header h1 { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
 
-    /* LAYOUT */
-    .layout { display: flex; height: calc(100vh - 50px); overflow: hidden; }
+    /* LAYOUT PRINCIPAL */
+    .layout { 
+      display: flex; 
+      height: calc(100vh - 50px); /* Prend tout le reste de la hauteur */
+      width: 100%;
+      overflow: hidden;
+    }
 
-    /* SIDEBAR */
+    /* SIDEBAR (GAUCHE) */
     .sidebar {
-      width: 460px; /* Plus large pour afficher tout le texte */
+      width: 500px; /* Plus large pour éviter le chevauchement */
       background: var(--bg-panel);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       flex-shrink: 0;
-      overflow-y: auto;
+      overflow-y: auto; /* Scroll uniquement ici */
+      z-index: 500;
     }
 
-    /* ZONE GRAPHES */
-    .dashboard-panel { padding: 15px; background: #0f1623; border-bottom: 1px solid var(--border); }
-    .charts-wrapper { display: flex; flex-direction: column; gap: 15px; }
-    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .chart-box { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 8px; border: 1px solid var(--border); }
-    .chart-title { font-size: 0.7rem; text-align: center; margin-bottom: 5px; color: #ccc; }
-    .canvas-container { position: relative; height: 120px; width: 100%; }
+    /* ZONE GRAPHES (CORRIGÉE) */
+    .dashboard-panel { 
+      padding: 20px; 
+      background: #0f1623; 
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    
+    .charts-wrapper { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 20px; 
+    }
+    
+    .chart-row { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 15px; 
+      align-items: start;
+    }
+    
+    .chart-box { 
+      background: rgba(255,255,255,0.02); 
+      border-radius: 8px; 
+      padding: 10px; 
+      border: 1px solid var(--border);
+      overflow: hidden; /* Coupe ce qui dépasse */
+    }
+    
+    .chart-title { 
+      font-size: 0.75rem; 
+      text-align: center; 
+      margin-bottom: 8px; 
+      color: #ccc; 
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    
+    /* Conteneur Canvas FIXE pour éviter les bugs */
+    .canvas-container-big { position: relative; height: 180px; width: 100%; }
+    .canvas-container-small { position: relative; height: 140px; width: 100%; }
 
-    /* ZONE LISTE PHOTOS (DESIGN DÉTAILLÉ) */
-    .list-container { padding: 15px; }
-    .section-title { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; margin: 20px 0 10px 0; font-weight: bold; }
+    /* LISTE PHOTOS */
+    .list-container { padding: 20px; }
+    .section-title { font-size: 0.9rem; color: var(--accent); text-transform: uppercase; margin: 0 0 15px 0; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
 
     .spot-card {
       background: var(--card-bg); border-radius: 8px; padding: 12px;
@@ -68,40 +111,34 @@
     }
     .spot-card:hover, .spot-card.active { border-color: var(--accent); background: #23304a; }
 
-    /* Layout interne de la carte */
-    .card-header { display: flex; gap: 12px; margin-bottom: 10px; }
-    .spot-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); }
-    .card-title-group { flex: 1; }
-    .spot-title { font-size: 1rem; font-weight: 600; color: white; margin-bottom: 4px; }
-    .spot-id { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; font-weight: bold; }
+    .card-header { display: flex; gap: 15px; margin-bottom: 10px; }
+    .spot-img { width: 90px; height: 90px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); }
     
-    .tags-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
-    .tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: #ccc; }
-    .tag.sentiment { background: rgba(0, 210, 255, 0.15); color: var(--accent); }
-
-    .card-body { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; }
-    .spot-desc { font-size: 0.8rem; color: #ccc; line-height: 1.4; margin-bottom: 8px; font-style: italic; }
+    .spot-title { font-size: 1.1rem; font-weight: 600; color: white; margin-bottom: 5px; }
+    .spot-desc { font-size: 0.85rem; color: #ccc; line-height: 1.4; margin-bottom: 10px; font-style: italic; }
     
-    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75rem; color: var(--text-muted); }
-    .meta-item b { color: white; }
+    .meta-grid { 
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
+      font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.2); 
+      padding: 8px; border-radius: 4px;
+    }
     .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; border: 1px solid #fff; }
 
     /* MAP */
-    #map { flex: 1; height: 100%; background: #0b1220; }
+    #map { 
+      flex: 1; /* Prend tout l'espace restant */
+      height: 100%; 
+      background: #0b1220; 
+      z-index: 1; /* Reste derrière la sidebar */
+    }
 
-    /* POPUP (Personnalisation Dark) */
+    /* POPUP */
     .leaflet-popup-content-wrapper { background: var(--bg-panel); color: white; border: 1px solid var(--accent); border-radius: 8px; }
     .leaflet-popup-tip { background: var(--bg-panel); border-top: 1px solid var(--accent); }
-    .leaflet-container a.leaflet-popup-close-button { color: white; }
-    
-    /* Contenu Popup */
     .popup-wrapper { width: 260px; }
     .popup-img { width: 100%; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.2); }
-    .popup-title { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: var(--accent); }
-    .popup-desc { font-size: 0.8rem; line-height: 1.4; margin-bottom: 8px; color: #ddd; }
-    .popup-meta { background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px; font-size: 0.75rem; }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       .layout { flex-direction: column-reverse; }
       .sidebar { width: 100%; height: 50vh; }
     }
@@ -110,19 +147,21 @@
 <body>
 
   <header>
-    <h1>Aubervilliers — Analyse Complète</h1>
-    <span style="font-size:0.8rem; color:var(--accent);">Live Data</span>
+    <h1>Aubervilliers — Analyse Finale</h1>
+    <span style="font-size:0.8rem; color:var(--accent);">Dashboard Interactif</span>
   </header>
 
   <div class="layout">
+    
     <aside class="sidebar">
       
       <div class="dashboard-panel">
-        <div class="section-title" style="margin-top:0;">Statistiques Visuelles</div>
+        <div class="section-title">Analyse des Données</div>
+        
         <div class="charts-wrapper">
           <div class="chart-box">
             <div class="chart-title">Répartition des Sentiments</div>
-            <div class="canvas-container" style="height:140px;">
+            <div class="canvas-container-big">
               <canvas id="chart1"></canvas>
             </div>
           </div>
@@ -130,13 +169,14 @@
           <div class="chart-row">
             <div class="chart-box">
               <div class="chart-title">Typologies</div>
-              <div class="canvas-container">
+              <div class="canvas-container-small">
                 <canvas id="chart2"></canvas>
               </div>
             </div>
+            
             <div class="chart-box">
-              <div class="chart-title">Densité</div>
-              <div class="canvas-container">
+              <div class="chart-title">Densité (Rythme)</div>
+              <div class="canvas-container-small">
                 <canvas id="chart3"></canvas>
               </div>
             </div>
@@ -145,7 +185,7 @@
       </div>
 
       <div class="list-container" id="cards-list">
-        <div class="section-title">Détails des Étapes (17)</div>
+        <div class="section-title">Détail des 17 Étapes</div>
         </div>
     </aside>
 
@@ -153,7 +193,7 @@
   </div>
 
 <script>
-  // --- DONNÉES COMPLÈTES ---
+  // --- DONNÉES COMPLÈTES (17 Photos) ---
   const data = [
     { id: 1, file: "images/photo04.jpg", title: "Humathèque", coords: [48.9105, 2.3660], type: "Architecture", density: 3, sentiment: "Moderne", dims: "3024x4032", color: "#3498DB", desc: "Architecture blanche clinique, lignes épurées. Contraste fort avec le ciel bleu." },
     { id: 2, file: "images/photo02.jpg", title: "MSH Paris Nord", coords: [48.9112, 2.3655], type: "Architecture", density: 6, sentiment: "Graphique", dims: "3024x4032", color: "#A93226", desc: "Rythme vertical des brise-soleil et présence organique de l'arbre rouge." },
@@ -182,80 +222,61 @@
   const path = [];
   const list = document.getElementById('cards-list');
 
-  // --- GÉNÉRATION : LISTE + POPUPS DÉTAILLÉS ---
+  // --- GÉNÉRATION ---
   data.forEach(item => {
     
-    // 1. CRÉATION DE LA CARTE DANS LA BARRE LATÉRALE (Liste)
+    // Carte Liste
     const el = document.createElement('div');
     el.className = 'spot-card';
     el.id = `card-${item.id}`;
     el.onclick = () => focusMap(item.id);
     
-    // On injecte TOUTES les infos dans la carte latérale
     el.innerHTML = `
       <div class="card-header">
         <img src="${item.file}" class="spot-img" onerror="this.src='https://placehold.co/80'">
-        <div class="card-title-group">
-          <div class="spot-id">Étape #${item.id}</div>
+        <div style="flex:1">
           <div class="spot-title">${item.title}</div>
-          <div class="tags-row">
-            <span class="tag sentiment">${item.sentiment}</span>
-            <span class="tag">${item.type}</span>
+          <div class="meta-grid">
+            <span><b>#${item.id}</b> | ${item.sentiment}</span>
+            <span><span class="color-dot" style="background:${item.color}"></span></span>
           </div>
         </div>
       </div>
-      <div class="card-body">
-        <div class="spot-desc">${item.desc}</div>
-        <div class="meta-grid">
-          <div class="meta-item"><b>Dim:</b> ${item.dims}</div>
-          <div class="meta-item"><b>Densité:</b> ${item.density}/10</div>
-          <div class="meta-item" style="grid-column:span 2; display:flex; align-items:center;">
-            <b>Couleur:</b> 
-            <span class="color-dot" style="background:${item.color}; margin-left:5px;"></span> ${item.color}
-          </div>
-        </div>
+      <div class="spot-desc">${item.desc}</div>
+      <div class="meta-grid">
+        <span><b>Dim:</b> ${item.dims}</span>
+        <span><b>Type:</b> ${item.type}</span>
       </div>
     `;
     list.appendChild(el);
 
-    // 2. CRÉATION DU MARQUEUR + POPUP DÉTAILLÉ
+    // Marker
     const m = L.circleMarker(item.coords, { color: '#00d2ff', fillColor: item.color, fillOpacity: 0.9, radius: 8 }).addTo(map);
-    
-    // On injecte TOUTES les infos dans la popup aussi
-    const popupHTML = `
+    m.bindPopup(`
       <div class="popup-wrapper">
         <div class="popup-title">${item.id}. ${item.title}</div>
         <img src="${item.file}" class="popup-img">
         <div class="popup-desc">${item.desc}</div>
-        <div class="popup-meta">
-          <strong>Type:</strong> ${item.type} <br>
-          <strong>Sentiment:</strong> ${item.sentiment} <br>
-          <strong>Dimensions:</strong> ${item.dims} <br>
-          <strong>Couleur Dom.:</strong> <span style="color:${item.color}">● ${item.color}</span>
-        </div>
       </div>
-    `;
-    m.bindPopup(popupHTML);
+    `);
     markers[item.id] = m;
     path.push(item.coords);
   });
 
-  // Tracer le chemin
   L.polyline(path, { color: '#00d2ff', dashArray: '5,5', opacity: 0.5 }).addTo(map);
   map.fitBounds(path, { padding: [50, 50] });
 
-  // Fonction de focus
   function focusMap(id) {
     const m = markers[id];
     map.setView(m.getLatLng(), 18);
     m.openPopup();
     document.querySelectorAll('.spot-card').forEach(c => c.classList.remove('active'));
     document.getElementById(`card-${id}`).classList.add('active');
+    document.getElementById(`card-${id}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  // --- GRAPHES CHART.JS ---
+  // --- CHART.JS CONFIGURATION (CORRIGÉE) ---
   
-  // Préparation données
   const sentimentCounts = {};
   const typeCounts = {};
   const densityData = data.map(d => d.density);
@@ -266,7 +287,7 @@
     typeCounts[d.type] = (typeCounts[d.type] || 0) + 1;
   });
 
-  // Chart 1: Sentiments
+  // Chart 1: Sentiments (Doughnut)
   new Chart(document.getElementById('chart1'), {
     type: 'doughnut',
     data: {
@@ -277,7 +298,11 @@
         borderWidth: 0
       }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#ccc', boxWidth: 10, font: {size: 9} } } } }
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false, 
+      plugins: { legend: { position: 'right', labels: { color: '#ccc', boxWidth: 10, font: {size: 9} } } } 
+    }
   });
 
   // Chart 2: Types (Bar)
@@ -293,9 +318,10 @@
       }]
     },
     options: { 
-      responsive: true, maintainAspectRatio: false, 
+      responsive: true, 
+      maintainAspectRatio: false, 
       plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color: '#8b9bbd', font:{size:9} } }, y: { display:false } }
+      scales: { x: { ticks: { color: '#8b9bbd', font:{size:8} } }, y: { display:false } }
     }
   });
 
@@ -313,9 +339,10 @@
       }]
     },
     options: { 
-      responsive: true, maintainAspectRatio: false,
+      responsive: true, 
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { x: { display: false }, y: { display: false } }
+      scales: { x: { display: false }, y: { display: false, min: 0, max: 10 } }
     }
   });
 
